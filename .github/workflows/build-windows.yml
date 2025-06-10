@@ -1,1 +1,41 @@
+name: Build Windows EXE
 
+# 1. กำหนด trigger: ทุกครั้งที่ push สู่ branch main หรือสั่งด้วยมือ
+on:
+  push:
+    branches: [ main ]
+  workflow_dispatch:
+
+jobs:
+  build:
+    # 2. ใช้ agent ของ Windows ล่าสุด
+    runs-on: windows-latest
+
+    steps:
+    # 3. เช็คเอาท์โค้ดใน repo
+    - name: Checkout code
+      uses: actions/checkout@v3
+
+    # 4. ติดตั้ง Python
+    - name: Setup Python 3.10
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.10'
+
+    # 5. ติดตั้ง dependencies ของโปรเจกต์
+    - name: Install dependencies
+      run: pip install pyinstaller pillow requests
+
+    # 6. คอมไพล์เป็น .exe โดยใช้ PyInstaller
+    - name: Build executable
+      shell: bash
+      run: |
+        pyinstaller --onefile --windowed bypass_gui.py
+
+    # 7. อัปโหลดไฟล์ .exe เป็น artifact
+    - name: Upload artifact
+      uses: actions/upload-artifact@v3
+      with:
+        name: bypass-gui-exe
+        path: dist/bypass_gui.exe
+        
